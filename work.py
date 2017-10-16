@@ -61,10 +61,13 @@ cell_per_block = 1  # HOG cells per block
 hog_channel = "ALL"  # Can be 0, 1, 2, or "ALL"
 spatial_size = (16, 16)  # Spatial binning dimensions
 hist_bins = 16  # Number of histogram bins
-spatial_feat = False  # Spatial features on or off
-hist_feat = False  # Histogram features on or off
+spatial_feat = True  # Spatial features on or off
+hist_feat = True  # Histogram features on or off
 hog_feat = True  # HOG features on or off
 y_start_stop = [None, None]  # Min and max in y to search in slide_window()
+
+
+
 
 
 # check if mode exist
@@ -129,7 +132,17 @@ t = time.time()
 image = mpimg.imread('./test_images/test6.jpg')
 draw_image = np.copy(image)
 
-method = 2
+def process_image(image):
+    hot_windows, heatmap, labels = process(image,
+                                            color_space, svc,
+                                            X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
+                                            hist_bins,
+                                            spatial_feat,
+                                            hist_feat)
+    result = draw_labeled_bboxes(np.copy(image), labels)
+    return result
+
+method = 4
 if method == 1:
     # Uncomment the following line if you extracted training
     # data from .png images (scaled 0 to 1 by mpimg) and the
@@ -195,23 +208,23 @@ elif method == 2:
 
     plt.show()
 
-else:
+elif method == 3:
     ystart = 400
     ystop = 700
     images = [
               './test_images/test1.jpg',
-              # './test_images/test2.jpg',
-              # './test_images/test3.jpg',
-              # './test_images/test4.jpg',
-              # './test_images/test5.jpg',
-              # './test_images/test6.jpg'
+              './test_images/test2.jpg',
+              './test_images/test3.jpg',
+              './test_images/test4.jpg',
+              './test_images/test5.jpg',
+              './test_images/test6.jpg'
     ]
 
     idx = 0
     for image_fn in images:
         image = mpimg.imread(image_fn)
         hot_windows_list2, heatmap, labels = process(image,
-                ystart, ystop, color_space, svc,
+                color_space, svc,
                 X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
                 hist_bins,
                 spatial_feat,
@@ -234,25 +247,13 @@ else:
         idx += 1
 
     plt.show()
-
-
-def process_image(image):
-    hot_windows, heatmap, labels = process2(image,
-                                            color_space, svc,
-                                            X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
-                                            hog_channel,
-                                            hist_bins,
-                                            spatial_feat,
-                                            hist_feat)
-    result = draw_labeled_bboxes(np.copy(image), labels)
-    return result
-
-# white_output = 'output_videos/project_video.mp4'
-# ## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
-# ## To do so add .subclip(start_second,end_second) to the end of the line below
-# ## Where start_second and end_second are integer values representing the start and end of the subclip
-# ## You may also uncomment the following line for a subclip of the first 5 seconds
-# ##clip1 = VideoFileClip("test_videos/solidWhiteRight.mp4").subclip(0,5)
-# clip1 = VideoFileClip("project_video.mp4")
-# white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
-# white_clip.write_videofile(white_output, audio=False)
+else:
+    white_output = 'output_videos/project_video.mp4'
+    ## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
+    ## To do so add .subclip(start_second,end_second) to the end of the line below
+    ## Where start_second and end_second are integer values representing the start and end of the subclip
+    ## You may also uncomment the following line for a subclip of the first 5 seconds
+    ##clip1 = VideoFileClip("test_videos/solidWhiteRight.mp4").subclip(0,5)
+    clip1 = VideoFileClip("project_video.mp4")
+    white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
+    white_clip.write_videofile(white_output, audio=False)

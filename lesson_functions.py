@@ -133,7 +133,7 @@ def process2(image,
 
 
 def process(image,
-            ystart, ystop, color_space, svc,
+            color_space, svc,
             X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
             hist_bins,
             spatial_feat,
@@ -146,42 +146,48 @@ def process(image,
     # ystart = 400
     # ystop = 700
     # scale = 2.0
-    scales = [1.0,  2.0, 2.5]
-    cells_per_steps = [3,  3, 2]
-    colors = [(0, 0, 255),  (0, 255, 0), (255, 0, 255)]
+    # scales = [1.0,  2.0, 2.5]
+    # cells_per_steps = [2,  1, 2]
+    # colors = [(0, 0, 255),  (0, 255, 0), (255, 0, 255)]
     # scales = [1.0, 1.5, 2.0, 2.5]
     # cells_per_steps = [1, 1, 1, 1]
     # colors = [(0, 0, 255), (255, 255, 0), (0, 255, 0), (255, 0, 255)]
+    ystart = [380, 400, 400]
+    ystop = [550, 600, 656]
+    scales = [1 ,1.5 ,2.0]
+    cells_per_steps = [2, 2, 2]
+    colors = [(255, 255, 0), (255, 255, 0), (0, 255, 0), (255, 0, 255)]
 
     hot_windows_list = []
     hot_windows_list2 = []
     index = 0
     for scale in scales:
         tt = time.time()
-        hot_windows = find_cars(image, ystart, ystop, scale, cells_per_steps[index], color_space, svc,
+        hot_windows = find_cars(image, ystart[index], ystop[index], scale, cells_per_steps[index], color_space, svc,
                                 X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
                                 hist_bins,
                                 spatial_feat,
                                 hist_feat)
         index += 1
         tt2 = time.time()
-        print(round(tt2 - tt, 2), 'Seconds Scale {}'.format(scale))
+        # print(round(tt2 - tt, 2), 'Seconds Scale {}'.format(scale))
         hot_windows_list.append(hot_windows)
         hot_windows_list2.extend(hot_windows)
 
     t2 = time.time()
     print('Total', round(t2 - t, 2), 'Seconds to Search ...')
 
-    idx = 0
-    draw_image = np.copy(image)
-    for hot_wins in hot_windows_list:
-        window_img = draw_boxes(draw_image, hot_wins, color=colors[idx], thick=6)
-        idx += 1
-        win_num = 100 + len(hot_windows_list) * 10 + idx
-        plt.subplot(win_num), plt.imshow(window_img)
-        plt.title('scale \n{}'.format(scales[idx - 1]))
+    if False:
+        idx = 0
+        draw_image = np.copy(image)
+        for hot_wins in hot_windows_list:
+            window_img = draw_boxes(draw_image, hot_wins, color=colors[idx], thick=6)
+            idx += 1
+            win_num = 100 + len(hot_windows_list) * 10 + idx
+            plt.subplot(win_num), plt.imshow(window_img)
+            plt.title('scale \n{}'.format(scales[idx - 1]))
 
-    plt.show()
+        plt.show()
 
     heat = np.zeros_like(image[:, :, 0]).astype(np.float)
     # Add heat to each box in box list
@@ -319,10 +325,10 @@ def find_cars(img, ystart, ystop, scale, cells_per_step, cspace, svc,
                 hist_features = color_hist(subimg, nbins=hist_bins)
 
             # Scale features and make a prediction
-            test_features = X_scaler.transform(
-                np.array(hog_features).reshape(1, -1))
             # test_features = X_scaler.transform(
-            #     np.hstack((spatial_features, hist_features, hog_features)).reshape(1, -1))
+            #     np.array(hog_features).reshape(1, -1))
+            test_features = X_scaler.transform(
+                np.hstack((spatial_features, hist_features, hog_features)).reshape(1, -1))
             # test_features = X_scaler.transform(np.hstack((shape_feat, hist_feat)).reshape(1, -1))
             test_prediction = svc.predict(test_features)
 
