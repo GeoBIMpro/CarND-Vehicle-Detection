@@ -301,14 +301,35 @@ elif method == 2:
     plt.show()
 else:
 
-    ystart = 200
+    ystart = 400
     ystop = 700
     scale = 2.0
+    scales = [1.0, 2.0, 2.5]
+    colors = [(0, 0, 255), (0, 255, 0), (255, 0, 255)]
 
-    out_img = find_cars(image, ystart, ystop, scale, color_space, svc, X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
-                        hist_bins,
-                        spatial_feat,
-                        hist_feat)
+    hot_windows_list = []
+    for scale in scales:
+        tt = time.time()
+        hot_windows = find_cars(image, ystart, ystop, scale, color_space, svc,
+                            X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
+                            hist_bins,
+                            spatial_feat,
+                            hist_feat)
+        tt2 = time.time()
+        print(round(tt2 - tt, 2), 'Seconds Scale {}'.format(scale))
+        hot_windows_list.append(hot_windows)
 
-    plt.imshow(out_img)
+    t2 = time.time()
+    print('Total',  round(t2 - t, 2), 'Seconds to Search ...')
+
+    idx = 0
+    for hot_wins in hot_windows_list:
+
+        window_img = draw_boxes(draw_image, hot_wins, color=colors[idx], thick=6)
+        idx += 1
+        win_num = 100+len(hot_windows_list)*10+idx
+        plt.subplot(win_num), plt.imshow(window_img)
+        plt.title('scale \n{}'.format(scales[idx-1]))
+
     plt.show()
+

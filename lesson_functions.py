@@ -12,7 +12,7 @@ def find_cars(img, ystart, ystop, scale, cspace, svc,
               hist_feat=True
               ):
 
-    draw_img = np.copy(img)
+    # draw_img = np.copy(img)
     img = img.astype(np.float32) / 255
 
     img_tosearch = img[ystart:ystop, :, :]
@@ -56,6 +56,8 @@ def find_cars(img, ystart, ystop, scale, cspace, svc,
     hog2 = get_hog_features(ch2, orient, pix_per_cell, cell_per_block, feature_vec=False)
     hog3 = get_hog_features(ch3, orient, pix_per_cell, cell_per_block, feature_vec=False)
 
+    window_list = []
+
     for xb in range(nxsteps):
         for yb in range(nysteps):
             ypos = yb * cells_per_step
@@ -97,10 +99,11 @@ def find_cars(img, ystart, ystop, scale, cspace, svc,
                 xbox_left = np.int(xleft * scale)
                 ytop_draw = np.int(ytop * scale)
                 win_draw = np.int(window * scale)
-                cv2.rectangle(draw_img, (xbox_left, ytop_draw ),
-                              (xbox_left + win_draw, ytop_draw + win_draw), (0, 0, 255), 6)
+                window_list.append(((xbox_left, ytop_draw), (xbox_left + win_draw, ytop_draw + win_draw)))
+                # cv2.rectangle(draw_img, (xbox_left, ytop_draw),
+                #               (xbox_left + win_draw, ytop_draw + win_draw), (0, 0, 255), 6)
 
-    return draw_img
+    return window_list
 
 
 def convert_color(img, conv='RGB2YCrCb'):
