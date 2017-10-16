@@ -51,15 +51,25 @@ def process2(image,
         (0.8, 0.8),
     ]
 
-    # create sliding windows
-    windows = slide_window(image, x_start_stop=sw_x_limits[0], y_start_stop=sw_y_limits[0],
-                           xy_window=sw_window_size[0], xy_overlap=sw_overlap[0])
+    windows = []
+    for i in range(len(sw_window_size)):
+        # create sliding windows
+        # t = time.time()
+        w = slide_window(image, x_start_stop=sw_x_limits[i], y_start_stop=sw_y_limits[i],
+                               xy_window=sw_window_size[i], xy_overlap=sw_overlap[i])
+        windows.extend(w)
+        # t2 = time.time()
+        # print(round(t2 - t, 2), 'Seconds Window Size {}'.format(sw_window_size[i]))
 
-    windows2 = slide_window(image, x_start_stop=sw_x_limits[1], y_start_stop=sw_y_limits[1],
-                            xy_window=sw_window_size[1], xy_overlap=sw_overlap[1])
-
-    windows3 = slide_window(image, x_start_stop=sw_x_limits[2], y_start_stop=sw_y_limits[2],
-                            xy_window=sw_window_size[2], xy_overlap=sw_overlap[2])
+    # # create sliding windows
+    # windows = slide_window(image, x_start_stop=sw_x_limits[0], y_start_stop=sw_y_limits[0],
+    #                        xy_window=sw_window_size[0], xy_overlap=sw_overlap[0])
+    #
+    # windows2 = slide_window(image, x_start_stop=sw_x_limits[1], y_start_stop=sw_y_limits[1],
+    #                         xy_window=sw_window_size[1], xy_overlap=sw_overlap[1])
+    #
+    # windows3 = slide_window(image, x_start_stop=sw_x_limits[2], y_start_stop=sw_y_limits[2],
+    #                         xy_window=sw_window_size[2], xy_overlap=sw_overlap[2])
 
     # # show sliding windows
     # sliding_windows = []
@@ -72,15 +82,18 @@ def process2(image,
     # sliding_windows[1] = draw_boxes(sliding_windows[1], [windows2[12]], color=(0, 0, 255), thick=8)
     # sliding_windows[2] = draw_boxes(sliding_windows[2], [windows3[5]], color=(0, 0, 255), thick=8)
 
-    windows.extend(windows2)
-    windows.extend(windows3)
+    # windows.extend(windows2)
+    # windows.extend(windows3)
+    t = time.time()
     hot_windows = search_windows(image, windows, svc, X_scaler, color_space=color_space,
                                  spatial_size=spatial_size, hist_bins=hist_bins,
                                  orient=orient, pix_per_cell=pix_per_cell,
                                  cell_per_block=cell_per_block,
                                  hog_channel=hog_channel, spatial_feat=spatial_feat,
                                  hist_feat=hist_feat, hog_feat=True)
-    draw_image = np.copy(image)
+    t2 = time.time()
+    print(round(t2 - t, 2), 'Seconds Window ')
+    # draw_image = np.copy(image)
     # window_img = draw_boxes(draw_image, hot_windows, color=(0, 0, 255), thick=6)
     # print('hot windows {}'.format(len(hot_windows)))
 

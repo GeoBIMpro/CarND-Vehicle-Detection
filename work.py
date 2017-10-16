@@ -16,6 +16,7 @@ from sklearn.cross_validation import train_test_split
 import pickle
 from scipy.ndimage.measurements import label
 from random import shuffle
+from moviepy.editor import VideoFileClip
 
 cars = []
 notcars = []
@@ -193,99 +194,7 @@ elif method == 2:
         idx += 1
 
     plt.show()
-    # sw_x_limits = [
-    #     [None, None],
-    #     [None, None],
-    #     [None, None],
-    #     [None, None]
-    # ]
-    #
-    # sw_y_limits = [
-    #     [300, 700],
-    #     [300, 700],
-    #     [400, 600],
-    #     [390, 540]
-    # ]
-    #
-    # sw_window_size = [
-    #
-    #     (128, 128),
-    #     (96, 96),
-    #     (80, 80),
-    #     (200, 200)
-    # ]
-    #
-    # sw_overlap = [
-    #
-    #     (0.8, 0.8),
-    #     (0.5, 0.5),
-    #     (0.5, 0.5),
-    #     (0.8, 0.8),
-    # ]
-    #
-    # # create sliding windows
-    # windows = slide_window(image, x_start_stop=sw_x_limits[0], y_start_stop=sw_y_limits[0],
-    #                        xy_window=sw_window_size[0], xy_overlap=sw_overlap[0])
-    #
-    # windows2 = slide_window(image, x_start_stop=sw_x_limits[1], y_start_stop=sw_y_limits[1],
-    #                         xy_window=sw_window_size[1], xy_overlap=sw_overlap[1])
-    #
-    # windows3 = slide_window(image, x_start_stop=sw_x_limits[2], y_start_stop=sw_y_limits[2],
-    #                         xy_window=sw_window_size[2], xy_overlap=sw_overlap[2])
-    #
-    # # # show sliding windows
-    # # sliding_windows = []
-    # # sliding_windows.append(draw_boxes(np.copy(image), windows, color=(0, 0, 0), thick=4))
-    # # sliding_windows.append(draw_boxes(np.copy(image), windows2, color=(0, 0, 0), thick=4))
-    # # sliding_windows.append(draw_boxes(np.copy(image), windows3, color=(0, 0, 0), thick=4))
-    #
-    # # # drawing one of sliding windows in blue
-    # # sliding_windows[0] = draw_boxes(sliding_windows[0], windows, color=(0, 0, 255), thick=8)
-    # # sliding_windows[1] = draw_boxes(sliding_windows[1], [windows2[12]], color=(0, 0, 255), thick=8)
-    # # sliding_windows[2] = draw_boxes(sliding_windows[2], [windows3[5]], color=(0, 0, 255), thick=8)
-    #
-    # windows.extend(windows2)
-    # windows.extend(windows3)
-    # hot_windows = search_windows(image, windows, svc, X_scaler, color_space=color_space,
-    #                              spatial_size=spatial_size, hist_bins=hist_bins,
-    #                              orient=orient, pix_per_cell=pix_per_cell,
-    #                              cell_per_block=cell_per_block,
-    #                              hog_channel=hog_channel, spatial_feat=spatial_feat,
-    #                              hist_feat=hist_feat, hog_feat=hog_feat)
-    # window_img = draw_boxes(draw_image, hot_windows, color=(0, 0, 255), thick=6)
-    # print('hot windows {}'.format(len(hot_windows)))
-    #
-    # heat = np.zeros_like(image[:, :, 0]).astype(np.float)
-    # # Add heat to each box in box list
-    # heat = add_heat(heat, hot_windows)
-    #
-    # # Apply threshold to help remove false positives
-    # heat = apply_threshold(heat, 2)
-    #
-    # # Visualize the heatmap when displaying
-    # heatmap = np.clip(heat, 0, 255)
-    #
-    # # Find final boxes from heatmap using label function
-    # labels = label(heatmap)
-    # draw_img = draw_labeled_bboxes(np.copy(image), labels)
-    #
-    # # plt.subplot(141), plt.imshow(sliding_windows[0])
-    # # plt.title('sliding_windows[0]')
-    # # plt.subplot(142), plt.imshow(sliding_windows[1])
-    # # plt.title('sliding_windows[1]')
-    # # plt.subplot(143), plt.imshow(sliding_windows[2])
-    # # plt.title('sliding_windows[2]')
-    # # plt.subplot(144), plt.imshow(window_img)
-    # # plt.title('result')
-    # # plt.show()
-    #
-    # plt.subplot(131), plt.imshow(window_img)
-    # plt.title('windows')
-    # plt.subplot(132), plt.imshow(heatmap)
-    # plt.title('heatmap')
-    # plt.subplot(133), plt.imshow(draw_img)
-    # plt.title('cars')
-    # plt.show()
+
 else:
     ystart = 400
     ystop = 700
@@ -327,3 +236,23 @@ else:
     plt.show()
 
 
+def process_image(image):
+    hot_windows, heatmap, labels = process2(image,
+                                            color_space, svc,
+                                            X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
+                                            hog_channel,
+                                            hist_bins,
+                                            spatial_feat,
+                                            hist_feat)
+    result = draw_labeled_bboxes(np.copy(image), labels)
+    return result
+
+# white_output = 'output_videos/project_video.mp4'
+# ## To speed up the testing process you may want to try your pipeline on a shorter subclip of the video
+# ## To do so add .subclip(start_second,end_second) to the end of the line below
+# ## Where start_second and end_second are integer values representing the start and end of the subclip
+# ## You may also uncomment the following line for a subclip of the first 5 seconds
+# ##clip1 = VideoFileClip("test_videos/solidWhiteRight.mp4").subclip(0,5)
+# clip1 = VideoFileClip("project_video.mp4")
+# white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
+# white_clip.write_videofile(white_output, audio=False)
