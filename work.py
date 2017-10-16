@@ -217,72 +217,109 @@ elif method == 2:
     plt.title('result')
     plt.show()
 else:
-
-    images = ['./test_images/test1.jpg',
-              './test_images/test2.jpg',
-              './test_images/test3.jpg']
-    # Check the prediction time for a single sample
-    t = time.time()
-
-    image = mpimg.imread('./test_images/test1.jpg')
-    draw_image = np.copy(image)
-
     ystart = 400
     ystop = 700
-    scale = 2.0
-    scales = [1.0, 2.0, 2.5]
-    colors = [(0, 0, 255), (0, 255, 0), (255, 0, 255)]
-
-    hot_windows_list = []
-    hot_windows_list2 = []
-    for scale in scales:
-        tt = time.time()
-        hot_windows = find_cars(image, ystart, ystop, scale, color_space, svc,
-                            X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
-                            hist_bins,
-                            spatial_feat,
-                            hist_feat)
-        tt2 = time.time()
-        print(round(tt2 - tt, 2), 'Seconds Scale {}'.format(scale))
-        hot_windows_list.append(hot_windows)
-        hot_windows_list2.extend(hot_windows)
-
-    t2 = time.time()
-    print('Total',  round(t2 - t, 2), 'Seconds to Search ...')
+    images = [
+              # './test_images/test1.jpg',
+              # './test_images/test2.jpg',
+              # './test_images/test3.jpg',
+              # './test_images/test4.jpg',
+              './test_images/test5.jpg',
+              # './test_images/test6.jpg'
+    ]
 
     idx = 0
-    for hot_wins in hot_windows_list:
+    for image_fn in images:
+        image = mpimg.imread(image_fn)
+        hot_windows_list2, heatmap, labels = process(image,
+                ystart, ystop, color_space, svc,
+                X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
+                hist_bins,
+                spatial_feat,
+                hist_feat)
 
-        window_img = draw_boxes(draw_image, hot_wins, color=colors[idx], thick=6)
+        # win_num = 100+len(hot_windows_list2)*10+idx  #131
+        draw_image = np.copy(image)
+        window_img = draw_boxes(draw_image, hot_windows_list2, color=(0, 0, 255), thick=6)
+        plt.subplot(len(images), 3, idx*3+1), plt.imshow(window_img)
+
+        plt.title('Image {} Hot Windows'.format(idx))
+        # plot heatmap
+        plt.subplot(len(images), 3, idx * 3 + 2), plt.imshow(heatmap, cmap='hot')
+        plt.title('heatmap')
+        # draw cars bbox
+        draw_img = draw_labeled_bboxes(np.copy(image), labels)
+        plt.subplot(len(images), 3, idx * 3 + 3), plt.imshow(draw_img)
+        plt.title('bbox')
+
         idx += 1
-        win_num = 100+len(hot_windows_list)*10+idx
-        plt.subplot(win_num), plt.imshow(window_img)
-        plt.title('scale \n{}'.format(scales[idx-1]))
 
     plt.show()
 
-    heat = np.zeros_like(image[:, :, 0]).astype(np.float)
-    # Add heat to each box in box list
-    heat = add_heat(heat, hot_windows_list2)
 
-    # Apply threshold to help remove false positives
-    heat = apply_threshold(heat, 3)
 
-    # Visualize the heatmap when displaying
-    heatmap = np.clip(heat, 0, 255)
 
-    # Find final boxes from heatmap using label function
-    labels = label(heatmap)
-    draw_img = draw_labeled_bboxes(np.copy(image), labels)
+    # # Check the prediction time for a single sample
+    # t = time.time()
+    #
+    # image = mpimg.imread('./test_images/test1.jpg')
+    # draw_image = np.copy(image)
+    #
 
-    fig = plt.figure()
-    plt.subplot(121)
-    plt.imshow(draw_img)
-    plt.title('Car Positions')
-    plt.subplot(122)
-    plt.imshow(heatmap, cmap='hot')
-    plt.title('Heat Map')
-    fig.tight_layout()
-    plt.show()
+    # scale = 2.0
+    # scales = [1.0, 2.0, 2.5]
+    # colors = [(0, 0, 255), (0, 255, 0), (255, 0, 255)]
+    #
+    # hot_windows_list = []
+    # hot_windows_list2 = []
+    # for scale in scales:
+    #     tt = time.time()
+    #     hot_windows = find_cars(image, ystart, ystop, scale, color_space, svc,
+    #                         X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
+    #                         hist_bins,
+    #                         spatial_feat,
+    #                         hist_feat)
+    #     tt2 = time.time()
+    #     print(round(tt2 - tt, 2), 'Seconds Scale {}'.format(scale))
+    #     hot_windows_list.append(hot_windows)
+    #     hot_windows_list2.extend(hot_windows)
+    #
+    # t2 = time.time()
+    # print('Total',  round(t2 - t, 2), 'Seconds to Search ...')
+    #
+    # idx = 0
+    # for hot_wins in hot_windows_list:
+    #
+    #     window_img = draw_boxes(draw_image, hot_wins, color=colors[idx], thick=6)
+    #     idx += 1
+    #     win_num = 100+len(hot_windows_list)*10+idx
+    #     plt.subplot(win_num), plt.imshow(window_img)
+    #     plt.title('scale \n{}'.format(scales[idx-1]))
+    #
+    # plt.show()
+    #
+    # heat = np.zeros_like(image[:, :, 0]).astype(np.float)
+    # # Add heat to each box in box list
+    # heat = add_heat(heat, hot_windows_list2)
+    #
+    # # Apply threshold to help remove false positives
+    # heat = apply_threshold(heat, 3)
+    #
+    # # Visualize the heatmap when displaying
+    # heatmap = np.clip(heat, 0, 255)
+    #
+    # # Find final boxes from heatmap using label function
+    # labels = label(heatmap)
+    # draw_img = draw_labeled_bboxes(np.copy(image), labels)
+    #
+    # fig = plt.figure()
+    # plt.subplot(121)
+    # plt.imshow(draw_img)
+    # plt.title('Car Positions')
+    # plt.subplot(122)
+    # plt.imshow(heatmap, cmap='hot')
+    # plt.title('Heat Map')
+    # fig.tight_layout()
+    # plt.show()
 
 
