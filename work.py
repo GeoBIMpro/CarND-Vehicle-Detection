@@ -142,7 +142,7 @@ def process_image(image):
     result = draw_labeled_bboxes(np.copy(image), labels)
     return result
 
-method = 4
+method = 3
 if method == 1:
     # Uncomment the following line if you extracted training
     # data from .png images (scaled 0 to 1 by mpimg) and the
