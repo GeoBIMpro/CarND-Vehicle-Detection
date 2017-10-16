@@ -14,6 +14,111 @@ from skimage.feature import hog
 from scipy.ndimage.measurements import label
 
 
+def process2(image,
+            color_space, svc,
+            X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
+            hog_channel,
+            hist_bins,
+            spatial_feat,
+            hist_feat):
+    sw_x_limits = [
+        [None, None],
+        [None, None],
+        [None, None],
+        [None, None]
+    ]
+
+    sw_y_limits = [
+        [300, 700],
+        [300, 700],
+        [400, 600],
+        [390, 540]
+    ]
+
+    sw_window_size = [
+
+        (128, 128),
+        (96, 96),
+        (80, 80),
+        (200, 200)
+    ]
+
+    sw_overlap = [
+
+        (0.8, 0.8),
+        (0.5, 0.5),
+        (0.5, 0.5),
+        (0.8, 0.8),
+    ]
+
+    # create sliding windows
+    windows = slide_window(image, x_start_stop=sw_x_limits[0], y_start_stop=sw_y_limits[0],
+                           xy_window=sw_window_size[0], xy_overlap=sw_overlap[0])
+
+    windows2 = slide_window(image, x_start_stop=sw_x_limits[1], y_start_stop=sw_y_limits[1],
+                            xy_window=sw_window_size[1], xy_overlap=sw_overlap[1])
+
+    windows3 = slide_window(image, x_start_stop=sw_x_limits[2], y_start_stop=sw_y_limits[2],
+                            xy_window=sw_window_size[2], xy_overlap=sw_overlap[2])
+
+    # # show sliding windows
+    # sliding_windows = []
+    # sliding_windows.append(draw_boxes(np.copy(image), windows, color=(0, 0, 0), thick=4))
+    # sliding_windows.append(draw_boxes(np.copy(image), windows2, color=(0, 0, 0), thick=4))
+    # sliding_windows.append(draw_boxes(np.copy(image), windows3, color=(0, 0, 0), thick=4))
+
+    # # drawing one of sliding windows in blue
+    # sliding_windows[0] = draw_boxes(sliding_windows[0], windows, color=(0, 0, 255), thick=8)
+    # sliding_windows[1] = draw_boxes(sliding_windows[1], [windows2[12]], color=(0, 0, 255), thick=8)
+    # sliding_windows[2] = draw_boxes(sliding_windows[2], [windows3[5]], color=(0, 0, 255), thick=8)
+
+    windows.extend(windows2)
+    windows.extend(windows3)
+    hot_windows = search_windows(image, windows, svc, X_scaler, color_space=color_space,
+                                 spatial_size=spatial_size, hist_bins=hist_bins,
+                                 orient=orient, pix_per_cell=pix_per_cell,
+                                 cell_per_block=cell_per_block,
+                                 hog_channel=hog_channel, spatial_feat=spatial_feat,
+                                 hist_feat=hist_feat, hog_feat=True)
+    draw_image = np.copy(image)
+    # window_img = draw_boxes(draw_image, hot_windows, color=(0, 0, 255), thick=6)
+    # print('hot windows {}'.format(len(hot_windows)))
+
+    heat = np.zeros_like(image[:, :, 0]).astype(np.float)
+    # Add heat to each box in box list
+    heat = add_heat(heat, hot_windows)
+
+    # Apply threshold to help remove false positives
+    heat = apply_threshold(heat, 2)
+
+    # Visualize the heatmap when displaying
+    heatmap = np.clip(heat, 0, 255)
+
+    # Find final boxes from heatmap using label function
+    labels = label(heatmap)
+    # draw_img = draw_labeled_bboxes(np.copy(image), labels)
+
+    # # plt.subplot(141), plt.imshow(sliding_windows[0])
+    # # plt.title('sliding_windows[0]')
+    # # plt.subplot(142), plt.imshow(sliding_windows[1])
+    # # plt.title('sliding_windows[1]')
+    # # plt.subplot(143), plt.imshow(sliding_windows[2])
+    # # plt.title('sliding_windows[2]')
+    # # plt.subplot(144), plt.imshow(window_img)
+    # # plt.title('result')
+    # # plt.show()
+    #
+    # plt.subplot(131), plt.imshow(window_img)
+    # plt.title('windows')
+    # plt.subplot(132), plt.imshow(heatmap)
+    # plt.title('heatmap')
+    # plt.subplot(133), plt.imshow(draw_img)
+    # plt.title('cars')
+    # plt.show()
+
+    return hot_windows, heatmap, labels
+
+
 def process(image,
             ystart, ystop, color_space, svc,
             X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
@@ -23,23 +128,29 @@ def process(image,
             ):
     # Check the prediction time for a single sample
     t = time.time()
-    # draw_image = np.copy(image)
+
 
     # ystart = 400
     # ystop = 700
     # scale = 2.0
-    scales = [1.0, 2.0, 2.5]
-    colors = [(0, 0, 255), (0, 255, 0), (255, 0, 255)]
+    scales = [1.0,  2.0, 2.5]
+    cells_per_steps = [3,  3, 2]
+    colors = [(0, 0, 255),  (0, 255, 0), (255, 0, 255)]
+    # scales = [1.0, 1.5, 2.0, 2.5]
+    # cells_per_steps = [1, 1, 1, 1]
+    # colors = [(0, 0, 255), (255, 255, 0), (0, 255, 0), (255, 0, 255)]
 
     hot_windows_list = []
     hot_windows_list2 = []
+    index = 0
     for scale in scales:
         tt = time.time()
-        hot_windows = find_cars(image, ystart, ystop, scale, color_space, svc,
+        hot_windows = find_cars(image, ystart, ystop, scale, cells_per_steps[index], color_space, svc,
                                 X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
                                 hist_bins,
                                 spatial_feat,
                                 hist_feat)
+        index += 1
         tt2 = time.time()
         print(round(tt2 - tt, 2), 'Seconds Scale {}'.format(scale))
         hot_windows_list.append(hot_windows)
@@ -49,6 +160,7 @@ def process(image,
     print('Total', round(t2 - t, 2), 'Seconds to Search ...')
 
     idx = 0
+    draw_image = np.copy(image)
     for hot_wins in hot_windows_list:
         window_img = draw_boxes(draw_image, hot_wins, color=colors[idx], thick=6)
         idx += 1
@@ -63,7 +175,7 @@ def process(image,
     heat = add_heat(heat, hot_windows_list2)
 
     # Apply threshold to help remove false positives
-    heat = apply_threshold(heat, 3)
+    heat = apply_threshold(heat, 2)
 
     # Visualize the heatmap when displaying
     heatmap = np.clip(heat, 0, 255)
@@ -109,7 +221,7 @@ def draw_labeled_bboxes(img, labels):
 
 
 # Define a single function that can extract features using hog sub-sampling and make predictions
-def find_cars(img, ystart, ystop, scale, cspace, svc,
+def find_cars(img, ystart, ystop, scale, cells_per_step, cspace, svc,
               X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
               hist_bins,
               spatial_feat=True,
@@ -117,9 +229,10 @@ def find_cars(img, ystart, ystop, scale, cspace, svc,
               ):
 
     # draw_img = np.copy(img)
-    img = img.astype(np.float32) / 255
-
     img_tosearch = img[ystart:ystop, :, :]
+    img_tosearch = img_tosearch.astype(np.float32) / 255
+
+
     # ctrans_tosearch = convert_color(img_tosearch, conv='RGB2YCrCb')
     # apply color conversion if other than 'RGB'
     if cspace != 'RGB':
@@ -134,7 +247,8 @@ def find_cars(img, ystart, ystop, scale, cspace, svc,
         elif cspace == 'YCrCb':
             ctrans_tosearch = cv2.cvtColor(img_tosearch, cv2.COLOR_RGB2YCrCb)
     else:
-        ctrans_tosearch = np.copy(img)
+        ctrans_tosearch = np.copy(img_tosearch)
+
     if scale != 1:
         imshape = ctrans_tosearch.shape
         ctrans_tosearch = cv2.resize(ctrans_tosearch, (np.int(imshape[1] / scale), np.int(imshape[0] / scale)))
@@ -151,7 +265,7 @@ def find_cars(img, ystart, ystop, scale, cspace, svc,
     # 64 was the orginal sampling rate, with 8 cells and 8 pix per cell
     window = 64
     nblocks_per_window = (window // pix_per_cell) - cell_per_block + 1
-    cells_per_step = 1  # Instead of overlap, define how many cells to step
+    cells_per_step = cells_per_step  # Instead of overlap, define how many cells to step
     nxsteps = (nxblocks - nblocks_per_window) // cells_per_step
     nysteps = (nyblocks - nblocks_per_window) // cells_per_step
 
@@ -203,7 +317,7 @@ def find_cars(img, ystart, ystop, scale, cspace, svc,
                 xbox_left = np.int(xleft * scale)
                 ytop_draw = np.int(ytop * scale)
                 win_draw = np.int(window * scale)
-                window_list.append(((xbox_left, ytop_draw), (xbox_left + win_draw, ytop_draw + win_draw)))
+                window_list.append(((xbox_left, ytop_draw+ystart), (xbox_left + win_draw, ytop_draw + win_draw+ystart)))
                 # cv2.rectangle(draw_img, (xbox_left, ytop_draw),
                 #               (xbox_left + win_draw, ytop_draw + win_draw), (0, 0, 255), 6)
 
