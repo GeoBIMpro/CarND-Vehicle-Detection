@@ -1,18 +1,6 @@
-##Writeup Template
-###You can use this file as a template for your writeup if you want to submit it as a markdown file, but feel free to use some other method and submit a pdf if you prefer.
-
 ---
 
-**Vehicle Detection Project**
-
-The goals / steps of this project are the following:
-
-* Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a classifier Linear SVM classifier
-* Optionally, you can also apply a color transform and append binned color features, as well as histograms of color, to your HOG feature vector.
-* Note: for those first two steps don't forget to normalize your features and randomize a selection for training and testing.
-* Implement a sliding-window technique and use your trained classifier to search for vehicles in images.
-* Run your pipeline on a video stream (start with the test_video.mp4 and later implement on full project_video.mp4) and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
-* Estimate a bounding box for vehicles detected.
+** Vehicle Detection Project **
 
 [//]: # (Image References)
 [image1]: ./output_images/car_noncar.png
@@ -49,18 +37,18 @@ Here is an example using the `YCrCb` color space and HOG parameters of `orientat
 
 
 
-####2. HOG parameters.
+####  2. HOG parameters.
 
 When pixels_per_cell is 8 , the HOG feature has more details than 16, but the search time also longer. with same search windows , pixels_per_cell 8 use 5 times more times.
 I use the first set of the parameters as performance consideration, as the this vehicle detection system is running on realtime.
 
-####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
+####  3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
 I shuffle the car and non-car images, and trained a SVM using `svc.fit` in `work.py line 112`.
 
 I also split the train data and test data. the tarining time is around 20 seconds.
 
-###Sliding Window Search
+###  4. Sliding Window Search
 
 I use size (64,64) to seach small size cars in far position. the seach windows as below.
 
@@ -74,23 +62,23 @@ The third is size(128,128) window as below.
 
 ![alt text][image3-2]
 
-####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
+####  5. Test images
 
-Ultimately I searched on two scales using RGB 3-channel HOG features without spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
+Ultimately I searched on 3 scales using RGB 3-channel HOG features without spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
 
 ![alt text][image4]
 
 But you can find in test image5 the right white car is not dectected. I guess it is because not enough train data.
 ---
 
-### Video Implementation
+###  Video Implementation
 
-####1. Veido Result
+####  1. Veido Result
 Here's a [project_video](https://youtu.be/TOLAfcZU9BU)
 
 Here's a [test_video](https://youtu.be/roQnOUG84kI)
 
-####2. Heatmap and filter
+####  2. Heatmap and filter
 
  I created a heatmap from positive windows and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
 
@@ -102,9 +90,9 @@ I set the threshold 2 in `lesson_functions.py line 197`
 
 ---
 
-###Discussion
+###  Discussion
 
-####1. Tuneing parameters
+####  1. Tuneing parameters
 
 Most of my time is used on tuneing the parameters: orient, pix_per_cell, cell_per_block, hog_channel, spatial_feat, hist_feat.
 
@@ -114,7 +102,7 @@ But the results of test images always have issue. false positive detection somet
 
 The reason cause this maybe due to not enough train data.
 
-####2. Bounding Box size
+####  2. Bounding Box size
 
 I found the bounding box not always cover the car actural size, but sometime the bbox is much large than the actural car size.
 
@@ -122,7 +110,7 @@ This may cuase serial problem, for example If the car in the adjacent lane, but 
 
 I am not sure how to deal this problem.
 
-####3. Dectection performance
+####  3. Dectection performance
 
 To get good result the `pix_per_cell` is better small, but the search time is longer.
 
