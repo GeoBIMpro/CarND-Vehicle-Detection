@@ -61,8 +61,8 @@ cell_per_block = 1  # HOG cells per block
 hog_channel = "ALL"  # Can be 0, 1, 2, or "ALL"
 spatial_size = (16, 16)  # Spatial binning dimensions
 hist_bins = 16  # Number of histogram bins
-spatial_feat = True  # Spatial features on or off
-hist_feat = True  # Histogram features on or off
+spatial_feat = False  # Spatial features on or off
+hist_feat = False  # Histogram features on or off
 hog_feat = True  # HOG features on or off
 y_start_stop = [None, None]  # Min and max in y to search in slide_window()
 
@@ -212,15 +212,16 @@ elif method == 3:
     ystart = 400
     ystop = 700
     images = [
-              './test_images/test1.jpg',
-              './test_images/test2.jpg',
+              # './test_images/test1.jpg',
+              # './test_images/test2.jpg',
               './test_images/test3.jpg',
-              './test_images/test4.jpg',
-              './test_images/test5.jpg',
-              './test_images/test6.jpg'
+              # './test_images/test4.jpg',
+              # './test_images/test5.jpg',
+              # './test_images/test6.jpg'
     ]
 
     idx = 0
+    plt.figure(figsize=(20, 10))
     for image_fn in images:
         image = mpimg.imread(image_fn)
         hot_windows_list2, heatmap, labels = process(image,
@@ -233,6 +234,7 @@ elif method == 3:
         # win_num = 100+len(hot_windows_list2)*10+idx  #131
         draw_image = np.copy(image)
         window_img = draw_boxes(draw_image, hot_windows_list2, color=(0, 0, 255), thick=6)
+
         plt.subplot(len(images), 3, idx*3+1), plt.imshow(window_img)
 
         plt.title('Image {} Hot Windows'.format(idx))

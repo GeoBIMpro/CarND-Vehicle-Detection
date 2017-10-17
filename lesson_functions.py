@@ -244,10 +244,10 @@ def find_cars(img, ystart, ystop, scale, cells_per_step, cspace, svc,
               X_scaler, orient, pix_per_cell, cell_per_block, spatial_size,
               hist_bins,
               spatial_feat=True,
-              hist_feat=True
+              hist_feat=True,
+              draw_all_img=None
               ):
-
-    # draw_img = np.copy(img)
+    draw_img = np.copy(img)
     img_tosearch = img[ystart:ystop, :, :]
     img_tosearch = img_tosearch.astype(np.float32) / 255
 
@@ -337,8 +337,13 @@ def find_cars(img, ystart, ystop, scale, cells_per_step, cspace, svc,
                 ytop_draw = np.int(ytop * scale)
                 win_draw = np.int(window * scale)
                 window_list.append(((xbox_left, ytop_draw+ystart), (xbox_left + win_draw, ytop_draw + win_draw+ystart)))
-                # cv2.rectangle(draw_img, (xbox_left, ytop_draw),
-                #               (xbox_left + win_draw, ytop_draw + win_draw), (0, 0, 255), 6)
+
+            if draw_all_img is not None:
+                xbox_left = np.int(xleft * scale)
+                ytop_draw = np.int(ytop * scale)
+                win_draw = np.int(window * scale)
+                cv2.rectangle(draw_all_img, (xbox_left, ytop_draw+ystart),
+                              (xbox_left + win_draw, ytop_draw + win_draw+ystart), (0, 0, 255), 6)
 
     return window_list
 
