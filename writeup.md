@@ -1,5 +1,5 @@
 
-** Vehicle Detection Project **
+**Vehicle Detection Project**
 
 [//]: # (Image References)
 [image1]: ./output_images/car_noncar.png
@@ -11,9 +11,9 @@
 [image4]: ./output_images/test_results.png
 [image5]: ./output_images/heatmap_filter.png
 
-###Histogram of Oriented Gradients (HOG)
+###  Histogram of Oriented Gradients (HOG)
 
-####1.   HOG features
+####  1.   HOG features
 
 I use `skimage's hog()` to generate HOG features.
 
