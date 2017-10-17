@@ -1,4 +1,3 @@
----
 
 ** Vehicle Detection Project **
 
@@ -88,7 +87,6 @@ I set the threshold 2 in `lesson_functions.py line 197`
 
 ![alt text][image5]
 
----
 
 ###  Discussion
 
